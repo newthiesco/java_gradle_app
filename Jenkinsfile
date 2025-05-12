@@ -2,31 +2,39 @@ pipeline {
     agent any
 
     environment {
-        GRADLE_OPTS = "-Dorg.gradle.daemon=false" // Avoid Gradle daemon issues in CI
-        VERSION = "${env.BUILD_ID}" // Tag builds with Jenkins build ID
+        VERSION = "${env.BUILD_ID}"
+        DOCKER_HOSTED_EP = "54.152.124.216:8083"
     }
 
     stages {
-        stage('SonarQube Analysis') {
+        stage("Sonar Quality Check") {
             steps {
                 script {
-                    // Set up SonarQube environment
-                    withSonarQubeEnv(installationName: 'sonarserver', credentialsId: 'sonar-token') {
+                    withSonarQubeEnv(credentialsId: 'sonar-token') {
                         sh 'chmod +x gradlew'
-                        sh './gradlew clean build sonarqube --info'
+                        sh './gradlew sonarqube --info'
+                    }
+
+                    timeout(time: 1, unit: 'MINUTES') {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                        }
                     }
                 }
             }
         }
 
-        stage('Quality Gate') {
+        stage("Build Docker Image and Push to Nexus") {
             steps {
-                timeout(time: 15, unit: 'MINUTES') {
-                    script {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK') {
-                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
-                        }
+                script {
+                    withCredentials([string(credentialsId: 'nexus_pass', variable: 'nexus_pass_var')]) {
+                        sh '''
+                            docker build -t $DOCKER_HOSTED_EP/javawebapp:${VERSION} .
+                            docker login -u admin -p $nexus_pass_var $DOCKER_HOSTED_EP
+                            docker push $DOCKER_HOSTED_EP/javawebapp:${VERSION}
+                            docker rmi $DOCKER_HOSTED_EP/javawebapp:${VERSION}
+                        '''
                     }
                 }
             }
