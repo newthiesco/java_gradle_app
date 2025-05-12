@@ -28,7 +28,7 @@ pipeline {
         stage("Build Docker Image and Push to Nexus") {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'nexus_pass', variable: 'nexus_pass_var')]) {
+                    withCredentials([string(credentialsId: 'nexus-pass', variable: 'nexus_pass_var')]) {
                         sh '''
                             docker build -t $DOCKER_HOSTED_EP/javawebapp:${VERSION} .
                             docker login -u admin -p $nexus_pass_var $DOCKER_HOSTED_EP
