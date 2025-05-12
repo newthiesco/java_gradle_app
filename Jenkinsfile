@@ -12,9 +12,16 @@ pipeline {
                 withSonarQubeEnv(installationName: 'sonarserver', credentialsId: 'sonar-token') {
                     // Make gradlew executable and run the SonarQube analysis
                     sh 'chmod +x gradlew'
-                    sh './gradlew clean build sonarqube --info --stacktrace'
+                    sh './gradlew clean build sonarqube --info'
                 }
+                timeout(time: 15, unit: 'MINUTES') {
+                   def qg = waitForQualityGate()
+                   if (qg.status != 'OK') {
+                        error "Pipeline aborted due to quality gate failure: ${qg.status}"
+             }
+             }
             }
         }
+   
     }
 }
