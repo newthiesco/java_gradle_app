@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         VERSION = "${env.BUILD_ID}"
-        DOCKER_HOSTED_EP = "54.152.124.216:8083"
+        DOCKER_HOSTED_EP = "34.229.88.101:8083"
     }
 
     stages {
