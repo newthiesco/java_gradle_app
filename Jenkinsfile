@@ -30,10 +30,10 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'nexus-pass', variable: 'nexus_pass_var')]) {
                         sh '''
-                            docker build -t $DOCKER_HOSTED_EP/javawebapp:${VERSION} .
-                            docker login -u admin -p $nexus_pass_var $DOCKER_HOSTED_EP
-                            docker push $DOCKER_HOSTED_EP/javawebapp:${VERSION}
-                            docker rmi $DOCKER_HOSTED_EP/javawebapp:${VERSION}
+                          sudo  docker build -t $DOCKER_HOSTED_EP/javawebapp:${VERSION} .
+                          sudo   docker login -u admin -p $nexus_pass_var $DOCKER_HOSTED_EP
+                          sudo docker push $DOCKER_HOSTED_EP/javawebapp:${VERSION}
+                          sudo   docker rmi $DOCKER_HOSTED_EP/javawebapp:${VERSION}
                         '''
                     }
                 }
