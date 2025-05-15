@@ -1,4 +1,8 @@
 .gradle/
 build/
+
+# Ignore everything in gradle except the wrapper folder and wrapper JAR
+gradle/*
+!gradle/wrapper/
 !gradle/wrapper/gradle-wrapper.jar
 
