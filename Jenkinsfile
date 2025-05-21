@@ -34,7 +34,7 @@ pipeline {
                              docker build -t ${DOCKER_HOSTED_EP}/javawebapp:${VERSION} .
 
                             echo "🔐 Logging into Nexus Docker registry..."
-                             docker login -u admin -p ${nexus_pass_var} ${DOCKER_HOSTED_EP}
+                             docker login -u admin -p $nexus_pass_var ${DOCKER_HOSTED_EP}
 
                             echo "📦 Pushing Docker image to Nexus..."
                              docker push ${DOCKER_HOSTED_EP}/javawebapp:${VERSION}
