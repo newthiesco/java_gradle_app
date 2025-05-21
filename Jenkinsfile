@@ -31,16 +31,16 @@ pipeline {
                     withCredentials([string(credentialsId: 'nexus_pass', variable: 'nexus_pass_var')]) {
                         sh """
                             echo "🔧 Building Docker image..."
-                            docker build -t ${DOCKER_HOSTED_EP}/javawebapp:${VERSION} .
+                            sudo docker build -t ${DOCKER_HOSTED_EP}/javawebapp:${VERSION} .
 
                             echo "🔐 Logging into Nexus Docker registry..."
-                            docker login -u admin -p ${nexus_pass_var} ${DOCKER_HOSTED_EP}
+                            sudo docker login -u admin -p ${nexus_pass_var} ${DOCKER_HOSTED_EP}
 
                             echo "📦 Pushing Docker image to Nexus..."
-                            docker push ${DOCKER_HOSTED_EP}/javawebapp:${VERSION}
+                            sudo docker push ${DOCKER_HOSTED_EP}/javawebapp:${VERSION}
 
                             echo "🧹 Cleaning up local Docker image..."
-                            docker rmi ${DOCKER_HOSTED_EP}/javawebapp:${VERSION}
+                            sudo docker rmi ${DOCKER_HOSTED_EP}/javawebapp:${VERSION}
                         """
                     }
                 }
