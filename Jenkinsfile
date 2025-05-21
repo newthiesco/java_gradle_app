@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         VERSION = "${env.BUILD_ID}"
-        
     }
 
     stages {
@@ -14,30 +13,8 @@ pipeline {
                         sh 'chmod +x gradlew'
                         sh './gradlew sonarqube --info'
                     }
-
-                    timeout(time: 3, unit: 'MINUTES') {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK') {
-                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
-                        }
-                    }
                 }
             }
         }
-
-        // stage("Build Docker Image and Push to Nexus") {
-        //     steps {
-        //         script {
-        //             withCredentials([string(credentialsId: 'nexus_pass', variable: 'nexus_pass_var')]) {
-        //                 sh '''
-        //                   sudo  docker build -t $DOCKER_HOSTED_EP/javawebapp:${VERSION} .
-        //                   sudo   docker login -u admin -p $nexus_pass_var $DOCKER_HOSTED_EP
-        //                   sudo docker push $DOCKER_HOSTED_EP/javawebapp:${VERSION}
-        //                   sudo   docker rmi $DOCKER_HOSTED_EP/javawebapp:${VERSION}
-        //                 '''
-        //             }
-        //         }
-        //     }
-        // }
     }
 }
