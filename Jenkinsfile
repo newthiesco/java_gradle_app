@@ -48,16 +48,14 @@ pipeline {
         stage("Push Helm Charts to Nexus Repo") {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'nexus_pass', variable: 'NEXUS_PASS')]) {
-                        sh '''
-                            echo "📁 Packaging Helm chart..."
-                            helm package helm-chart/
-
-                            echo "🚀 Pushing Helm chart to Nexus..."
-                            curl -v -u admin:${NEXUS_PASS} \
-                              --upload-file javawebapp-${VERSION}.tgz \
-                              http://${HELM_HOSTED_EP}/repository/helm-hosted/
-                        '''
+                    dir('kubernetes/') {
+                        withCredentials([string(credentialsId: 'nexus_pass', variable: 'nexus_pass_var')]) {
+                            sh '''
+                                helmchartversion=$(helm show chart myapp/ | grep version | awk '{print $2}')
+                                helm package myapp/
+                                curl -u admin:$nexus_pass_var http://$HELM_HOSTED_EP/repository/helm-hosted/ --upload-file myapp-${helmchartversion}.tgz -v
+                            '''
+                        }
                     }
                 }
             }
