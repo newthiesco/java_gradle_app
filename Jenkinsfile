@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        VERSION = "${env.BUILD_ID}" // Version is set from Jenkins Build ID
+        VERSION = "${env.BUILD_ID}" // Version from Jenkins Build ID
         DOCKER_HOSTED_EP = "3.92.204.104:8083"   // Nexus Docker repo endpoint
+        HELM_HOSTED_EP = "3.92.204.104:8081"     // Nexus Helm repo endpoint
     }
 
     stages {
@@ -23,25 +24,40 @@ pipeline {
                     }
                 }
             }
-        } // ✅ Closing brace added here
+        }
 
         stage("Build Docker Image & Push to Nexus") {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'nexus_pass', variable: 'nexus_pass_var')]) {
-                        sh """
+                    withCredentials([string(credentialsId: 'nexus_pass', variable: 'NEXUS_PASS')]) {
+                        sh '''
                             echo "🔧 Building Docker image..."
-                             docker build -t ${DOCKER_HOSTED_EP}/javawebapp:${VERSION} .
+                            docker build -t ${DOCKER_HOSTED_EP}/javawebapp:${VERSION} .
 
                             echo "🔐 Logging into Nexus Docker registry..."
-                             docker login -u admin -p $nexus_pass_var ${DOCKER_HOSTED_EP}
+                            echo "${NEXUS_PASS}" | docker login -u admin --password-stdin ${DOCKER_HOSTED_EP}
 
                             echo "📦 Pushing Docker image to Nexus..."
-                             docker push ${DOCKER_HOSTED_EP}/javawebapp:${VERSION}
+                            docker push ${DOCKER_HOSTED_EP}/javawebapp:${VERSION}
+                        '''
+                    }
+                }
+            }
+        }
 
-                            echo "🧹 Cleaning up local Docker image..."
-                             docker rmi ${DOCKER_HOSTED_EP}/javawebapp:${VERSION}
-                        """
+        stage("Push Helm Charts to Nexus Repo") {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'nexus_pass', variable: 'NEXUS_PASS')]) {
+                        sh '''
+                            echo "📁 Packaging Helm chart..."
+                            helm package helm-chart/
+
+                            echo "🚀 Pushing Helm chart to Nexus..."
+                            curl -v -u admin:${NEXUS_PASS} \
+                              --upload-file javawebapp-${VERSION}.tgz \
+                              http://${HELM_HOSTED_EP}/repository/helm-hosted/
+                        '''
                     }
                 }
             }
