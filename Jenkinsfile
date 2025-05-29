@@ -4,7 +4,7 @@ pipeline {
     environment {
         GRADLE_OPTS = "-Dorg.gradle.daemon=false"  // Prevent background Gradle processes
         VERSION = "${env.BUILD_ID}"               // Version is set from Jenkins Build ID
-        DOCKER_HOSTED_EP = "34.229.88.101:8081"   // Nexus Docker repo endpoint
+        DOCKER_HOSTED_EP = "34.227.172.55:8081"   // Nexus Docker repo endpoint
     }
 
     stages {
@@ -30,26 +30,26 @@ pipeline {
             }
         }
 
-        // stage("Build Docker Image & Push to Nexus") {
-        //     steps {
-        //         script {
-        //             withCredentials([string(credentialsId: 'nexus_pass', variable: 'nexus_pass_var')]) {
-        //                 sh """
-        //                     echo "🔧 Building Docker image..."
-        //                     docker build -t ${DOCKER_HOSTED_EP}/javawebapp:${VERSION} .
+        stage("Build Docker Image & Push to Nexus") {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'nexus_pass', variable: 'nexus_pass_var')]) {
+                        sh """
+                            echo "🔧 Building Docker image..."
+                            docker build -t ${DOCKER_HOSTED_EP}/javawebapp:${VERSION} .
 
-        //                     echo "🔐 Logging into Nexus Docker registry..."
-        //                     docker login -u admin -p ${nexus_pass_var} ${DOCKER_HOSTED_EP}
+                            echo "🔐 Logging into Nexus Docker registry..."
+                            docker login -u admin -p ${nexus_pass_var} ${DOCKER_HOSTED_EP}
 
-        //                     echo "📦 Pushing Docker image to Nexus..."
-        //                     docker push ${DOCKER_HOSTED_EP}/javawebapp:${VERSION}
+                            echo "📦 Pushing Docker image to Nexus..."
+                            docker push ${DOCKER_HOSTED_EP}/javawebapp:${VERSION}
 
-        //                     echo "🧹 Cleaning up local image..."
-        //                     docker rmi ${DOCKER_HOSTED_EP}/javawebapp:${VERSION}
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
+                            echo "🧹 Cleaning up local image..."
+                            docker rmi ${DOCKER_HOSTED_EP}/javawebapp:${VERSION}
+                        """
+                    }
+                }
+            }
+        }
     }
 }
