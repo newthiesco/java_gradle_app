@@ -5,6 +5,7 @@ pipeline {
         GRADLE_OPTS = "-Dorg.gradle.daemon=false"  // Prevent background Gradle processes
         VERSION = "${env.BUILD_ID}"               // Version is set from Jenkins Build ID
         DOCKER_HOSTED_EP = "34.227.172.55:8083"   // Nexus Docker repo endpoint
+        HELM_HOSTED_EP = "34.227.172.55::8081"
     }
 
     stages {
